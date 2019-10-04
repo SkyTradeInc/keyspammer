@@ -11,13 +11,15 @@ class Spammer {
 		this.keys = [4,5,6,7]
 		this.listen()
 		this.allowSpam = false
-		this.spamKey = 4
+		this.spamKeys = [4]
 	}
 
 	spam() {
 		const spamInterval = setInterval(()=>{
 			if(this.allowSpam) {
-				robot.keyTap(`${this.spamKey}`)
+				for(let i=0; i<this.spamKeys.length; i++) {
+					robot.keyTap(`${this.spamKeys[i]}`)
+				}
 			} else {
 				clearInterval(spamInterval)
 			}
@@ -29,13 +31,14 @@ class Spammer {
 		ioHook.on('keydown', event => {
 			if(self.keys.includes(event.keycode)) {
 				self.allowSpam = true
-				self.spamKey = event.keycode-1
+				self.spamKeys.push(event.keycode-1)
 				self.spam()
 			}
 		})
 
 		ioHook.on('keyup', event => {
 			if(self.keys.includes(event.keycode)) {
+				self.spamKeys = []
 				self.allowSpam = false
 			}
 		})
