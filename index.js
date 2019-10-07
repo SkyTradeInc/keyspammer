@@ -2,16 +2,26 @@ process.title = "Key Spammer"
 const robot = require("robotjs");
 const ioHook = require('iohook');
 const chalk = require('chalk')
-robot.setKeyboardDelay(parseInt(process.env.SPAM_INTERVAL))
+robot.setKeyboardDelay(0)
 ioHook.start();
 
 
 class Spammer {
 	constructor() {
 		this.keys = [4,5,6,7]
+		this.allowSpam = true
+		this.spamKeys = []
+		this.spamInterval = parseInt(process.env.SPAM_INTERVAL) || 500
 		this.listen()
-		this.allowSpam = false
-		this.spamKeys = [4]
+		this.spam()
+	}
+
+	enableSpam() {
+		this.allowSpam = true
+	}
+
+	disableSpam() {
+		this.disableSpam = false
 	}
 
 	spam() {
@@ -23,23 +33,29 @@ class Spammer {
 			} else {
 				clearInterval(spamInterval)
 			}
-		},parseInt(process.env.SPAM_INTERVAL))
+		},this.spamInterval)
 	}
+
+
 
 	listen() {
 		const self = this
+
 		ioHook.on('keydown', event => {
-			if(self.keys.includes(event.keycode)) {
-				self.allowSpam = true
-				self.spamKeys.push(event.keycode-1)
-				self.spam()
+			const keycode = event.keycode-1
+			if(self.keys.includes(keycode)) {
+				self.spamKeys.push(keycode)
+				self.enableSpam()
 			}
 		})
 
 		ioHook.on('keyup', event => {
-			if(self.keys.includes(event.keycode)) {
-				self.spamKeys = []
-				self.allowSpam = false
+			const keycode = event.keycode-1
+			if(self.keys.includes(keycode)) {
+				self.spamKeys = self.spamKeys.filter(key => key == keycode);
+			}
+			if(self.spamKeys.length === 0) {
+				self.disableSpam()
 			}
 		})
 	}
